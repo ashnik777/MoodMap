@@ -49,6 +49,23 @@ def dashboard():
         chart.create_custom_pie_chart(progress=60, hole=0.7, color=['yellow', 'rgba(0,0,0,0)'], percentage=True)
 
     st.divider()
+    col1, col2= st.columns(2)
+
+    with col1:
+        st.caption("Share of voice emotional moments")
+        tab1, tab2 = st.tabs(["Costumers", "Agents"])
+        with tab1:
+            chart.create_bar_chart([20,30,59,20],['Happy','Neutral','Sad','Angry'])
+        with tab2:
+            chart.create_bar_chart([30,40,60,10],['Happy','Neutral','Sad','Angry'])
+
+    with col2:
+        st.caption("Share of text emotional moments")
+        tab1, tab2 = st.tabs(["Costumers", "Agents"])
+        with tab1:
+            chart.create_bar_chart([20,30,59],['Positive','Neutral','Negative'])
+        with tab2:
+            chart.create_bar_chart([30,40,60],['Positive','Neutral','Negative'])
     
 
 def individual_call():
