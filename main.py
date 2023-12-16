@@ -1,4 +1,7 @@
 import streamlit as st
+from plots import CustomPieChart
+
+
 
 def dashboard():
     st.title("Dashboard")
@@ -28,6 +31,24 @@ def dashboard():
 
     st.divider()
     # Call count block
+
+    
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.caption("Costumers Satisfactions Levels")
+        chart = CustomPieChart()
+        chart.create_custom_pie_chart(progress=60, hole=0.7, color=['green', 'rgba(0,0,0,0)'], percentage=True)
+    with col2:
+        st.caption("Agents Performance Rate")
+        chart = CustomPieChart()
+        chart.create_custom_pie_chart(progress=70, hole=0.7, color=['blue', 'rgba(0,0,0,0)'], percentage=True)
+    with col3:
+        st.caption("Costumer Care")
+        chart = CustomPieChart()
+        chart.create_custom_pie_chart(progress=60, hole=0.7, color=['yellow', 'rgba(0,0,0,0)'], percentage=True)
+
+    st.divider()
     
 
 def individual_call():
