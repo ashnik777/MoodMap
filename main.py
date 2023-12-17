@@ -66,6 +66,27 @@ def dashboard():
             chart.create_bar_chart([20,30,59],['Positive','Neutral','Negative'])
         with tab2:
             chart.create_bar_chart([30,40,60],['Positive','Neutral','Negative'])
+
+    st.divider()
+
+
+    col1, col2= st.columns(2)
+    with col1:
+        st.caption("Share of voice emotional moments based on the time")
+        tab1, tab2 = st.tabs(["Costumers", "Agents"])
+        with tab1:
+            chart.create_grouped_bar_chart(Happy = [20,30,40],Neutral=[10,50,20],Sad=[35,25,55],Angry=[14,43,23])
+        with tab2:
+            chart.create_grouped_bar_chart(Happy = [10,30,50],Neutral=[60,30,25],Sad=[34,23,66],Angry=[23,12,54])
+
+    with col2:
+        st.caption("Share of text emotional moments based on the time")
+        tab1, tab2 = st.tabs(["Costumers", "Agents"])
+        with tab1:
+            chart.create_grouped_bar_chart(Happy = [23,54,76],Neutral=[87,45,23],Sad=[34,25,55],Angry=[65,43,23])
+        with tab2:
+            chart.create_grouped_bar_chart(Happy = [35,34,40],Neutral=[10,56,20],Sad=[35,86,55],Angry=[14,43,23])
+    
     
 
 def individual_call():

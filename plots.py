@@ -61,3 +61,51 @@ class CustomPieChart:
         # Display the chart
         st.plotly_chart(self.fig)
 
+    def create_grouped_bar_chart(self,Happy, Neutral, Sad, Angry):
+
+        categories = ['start part of call', 'mean part of call', 'finish part of call']
+        # Create traces for each group with specified colors
+        trace1 = go.Bar(
+            x=categories,
+            y=Happy,
+            name='Happy',
+            marker=dict(color='green')  # Change color here
+        )
+        trace2 = go.Bar(
+            x=categories,
+            y=Neutral,
+            name='Neutral',
+            marker=dict(color='yellow')  # Change color here
+        )
+        trace3 = go.Bar(
+            x=categories,
+            y=Sad,
+            name='Sad',
+            marker=dict(color='orange')  # Change color here
+        )
+        trace4 = go.Bar(
+            x=categories,
+            y=Angry,
+            name='Angry',
+            marker=dict(color='red')  # Change color here
+        )
+
+        # Assign traces to data variable
+        data = [trace1, trace2, trace3, trace4]
+
+        # Layout settings with background color
+        layout = go.Layout(
+            width=500, 
+            height=400,
+            yaxis=dict(title='percents', showgrid=False),
+            barmode='group',  # To create a grouped bar chart
+            plot_bgcolor='rgb(16,18,22)',
+            paper_bgcolor='rgb(16,18,22)'  # Change background color here
+        )
+
+        # Create figure
+        self.fig = go.Figure(data=data, layout=layout)
+
+        st.plotly_chart(self.fig)
+
+
