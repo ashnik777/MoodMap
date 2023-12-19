@@ -1,5 +1,7 @@
 import streamlit as st
 from plots import CustomPieChart
+import pandas as pd
+import numpy as np
 
 
 
@@ -32,20 +34,18 @@ def dashboard():
     st.divider()
     # Call count block
 
+    chart = CustomPieChart()
     
     col1, col2, col3 = st.columns(3)
 
     with col1:
         st.caption("Costumers Satisfactions Levels")
-        chart = CustomPieChart()
         chart.create_custom_pie_chart(progress=60, hole=0.7, color=['green', 'rgba(0,0,0,0)'], percentage=True)
     with col2:
         st.caption("Agents Performance Rate")
-        chart = CustomPieChart()
         chart.create_custom_pie_chart(progress=70, hole=0.7, color=['blue', 'rgba(0,0,0,0)'], percentage=True)
     with col3:
         st.caption("Costumer Care")
-        chart = CustomPieChart()
         chart.create_custom_pie_chart(progress=60, hole=0.7, color=['yellow', 'rgba(0,0,0,0)'], percentage=True)
 
     st.divider()
@@ -86,7 +86,21 @@ def dashboard():
             chart.create_grouped_bar_chart(Happy = [23,54,76],Neutral=[87,45,23],Sad=[34,25,55],Angry=[65,43,23])
         with tab2:
             chart.create_grouped_bar_chart(Happy = [35,34,40],Neutral=[10,56,20],Sad=[35,86,55],Angry=[14,43,23])
-    
+
+    st.divider()
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.caption("Top Call Aspects")
+        df = pd.read_csv('Call_topics.csv',index_col=0)
+        st.write(df)
+    with col2:
+        st.caption("Analysis of irony across calls")
+        chart.create_pie_chart_ironic_ornot(ironic_count=15,non_ironic_count=60)
+    with col3:
+        st.caption("Hate speech analysis across calls")
+        chart.create_hate_speech_pie_chart(hateful_count = 5, targeted_count = 12, aggressive_count = 6, not_hateful = 45)
     
 
 def individual_call():

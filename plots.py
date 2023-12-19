@@ -109,3 +109,34 @@ class CustomPieChart:
         st.plotly_chart(self.fig)
 
 
+    def create_pie_chart_ironic_ornot(self,ironic_count, non_ironic_count):
+        # Create data for Pie chart
+        labels = ['Ironic', 'Not Ironic']
+        values = [ironic_count, non_ironic_count]
+
+        # Create Pie chart
+        self.fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='none')])
+        self.fig.update_layout(
+            width=300,
+            height=300,
+            plot_bgcolor='rgb(16,18,22)',
+            paper_bgcolor='rgb(16,18,22)'
+        )
+
+        st.plotly_chart(self.fig)
+
+    def create_hate_speech_pie_chart(self,hateful_count, targeted_count, aggressive_count, not_hateful):
+        # Create data for Pie chart
+        labels = ['Hateful', 'Targeted', 'Aggressive', 'Not Hateful']
+        values = [hateful_count, targeted_count, aggressive_count, not_hateful]
+
+        # Create Pie chart
+        self.fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='none')])
+        self.fig.update_layout(
+            width=300,
+            height=300,
+            plot_bgcolor='rgb(16,18,22)',
+            paper_bgcolor='rgb(16,18,22)'
+        )
+
+        st.plotly_chart(self.fig)
