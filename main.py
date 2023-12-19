@@ -104,10 +104,41 @@ def dashboard():
     
 
 def individual_call():
-    st.title("Individual Call")
 
-    # Your logic for individual call display goes here
-    st.write("This is the individual call page.")
+    st.sidebar.divider()
+    st.sidebar.text_input('Call ID')
+    st.sidebar.button("Search", type="primary")
+    
+
+    st.title("Call Report")
+
+    call_info_data = {
+        'Call_ID': ['ASD-123'],
+        'Operator_ID': ['12-A'],
+        'Date': ['11-10-23 14:03:24'],
+        'Call Topic': ['Card Issue'],
+        'Call Duration/min': ['3']
+    }
+
+    df_call_info = pd.DataFrame(call_info_data)
+    st.dataframe(df_call_info, width=1000)
+    st.divider()
+
+    chart = CustomPieChart()
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.caption("Costumer Satisfaction Level")
+        chart.create_custom_pie_chart(progress=60, hole=0.7, color=['green', 'rgba(0,0,0,0)'], percentage=True)
+    with col2:
+        st.caption("Agent Performance Rate")
+        chart.create_custom_pie_chart(progress=70, hole=0.7, color=['blue', 'rgba(0,0,0,0)'], percentage=True)
+    with col3:
+        st.caption("Costumer Care")
+        chart.create_custom_pie_chart(progress=60, hole=0.7, color=['yellow', 'rgba(0,0,0,0)'], percentage=True)
+
+    
 
 def main():
     st.set_page_config(page_title='Dashboard', layout='wide')
