@@ -125,10 +125,10 @@ class CustomPieChart:
 
         st.plotly_chart(self.fig)
 
-    def create_hate_speech_pie_chart(self,hateful_count, targeted_count, aggressive_count, not_hateful):
+    def create_hate_speech_pie_chart(self,hateful_count, targeted_count, aggressive_count, Normal):
         # Create data for Pie chart
-        labels = ['Hateful', 'Targeted', 'Aggressive', 'Not Hateful']
-        values = [hateful_count, targeted_count, aggressive_count, not_hateful]
+        labels = ['Hateful', 'Targeted', 'Aggressive', 'Normal']
+        values = [hateful_count, targeted_count, aggressive_count, Normal]
 
         # Create Pie chart
         self.fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='none')])

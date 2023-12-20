@@ -100,7 +100,7 @@ def dashboard():
         chart.create_pie_chart_ironic_ornot(ironic_count=15,non_ironic_count=60)
     with col3:
         st.caption("Hate speech analysis across calls")
-        chart.create_hate_speech_pie_chart(hateful_count = 5, targeted_count = 12, aggressive_count = 6, not_hateful = 45)
+        chart.create_hate_speech_pie_chart(hateful_count = 5, targeted_count = 12, aggressive_count = 6, Normal = 45)
     
 
 def individual_call():
@@ -109,19 +109,38 @@ def individual_call():
     st.sidebar.text_input('Call ID')
     st.sidebar.button("Search", type="primary")
     
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.title("Call Report")
+    with col3:
+        # Initialize a session state variable to track image visibility
+        if "image_visible" not in st.session_state:
+            st.session_state.image_visible = False
 
-    st.title("Call Report")
+        # Toggle image visibility when the button is clicked
+        if st.button("Operator"):
+            st.session_state.image_visible = not st.session_state.image_visible
 
-    call_info_data = {
-        'Call_ID': ['ASD-123'],
-        'Operator_ID': ['12-A'],
-        'Date': ['11-10-23 14:03:24'],
-        'Call Topic': ['Card Issue'],
-        'Call Duration/min': ['3']
-    }
+        # Display the image if the session state variable is True
+        if st.session_state.image_visible:
+            st.image('./Images/Ashot Nikoghosyan.JPG', caption='Ashot Nikoghosyan', width=200)
 
-    df_call_info = pd.DataFrame(call_info_data)
-    st.dataframe(df_call_info, width=1000)
+    st.divider()
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("##### Call ID - {}".format('12d4'))
+        st.markdown("##### Call Topic - {}".format('Card Transaction'))
+        
+    with col3:
+        st.markdown("##### Call Duration - {} min {} seconds".format('3','24'))
+        st.markdown("##### Call Datetime - {}".format('12/11/2023 23:12:05'))
+     
+    st.divider()
+
+    
+
+
     st.divider()
 
     chart = CustomPieChart()
@@ -130,13 +149,13 @@ def individual_call():
 
     with col1:
         st.caption("Costumer Satisfaction Level")
-        chart.create_custom_pie_chart(progress=60, hole=0.7, color=['green', 'rgba(0,0,0,0)'], percentage=True)
+        chart.create_custom_pie_chart(progress=80, hole=0.7, color=['green', 'rgba(0,0,0,0)'], percentage=True)
     with col2:
         st.caption("Agent Performance Rate")
-        chart.create_custom_pie_chart(progress=70, hole=0.7, color=['blue', 'rgba(0,0,0,0)'], percentage=True)
+        chart.create_custom_pie_chart(progress=90, hole=0.7, color=['blue', 'rgba(0,0,0,0)'], percentage=True)
     with col3:
         st.caption("Costumer Care")
-        chart.create_custom_pie_chart(progress=60, hole=0.7, color=['yellow', 'rgba(0,0,0,0)'], percentage=True)
+        chart.create_custom_pie_chart(progress=85, hole=0.7, color=['yellow', 'rgba(0,0,0,0)'], percentage=True)
 
     
 
