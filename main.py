@@ -105,41 +105,34 @@ def dashboard():
 
 def individual_call():
 
-    st.sidebar.divider()
-    st.sidebar.text_input('Call ID')
-    st.sidebar.button("Search", type="primary")
-    
     col1, col2, col3 = st.columns(3)
     with col1:
         st.title("Call Report")
     with col3:
-        # Initialize a session state variable to track image visibility
-        if "image_visible" not in st.session_state:
-            st.session_state.image_visible = False
+        st.markdown('#### Operator')
+        # # Initialize a session state variable to track image visibility
+        # if "image_visible" not in st.session_state:
+        #     st.session_state.image_visible = False
 
-        # Toggle image visibility when the button is clicked
-        if st.button("Operator"):
-            st.session_state.image_visible = not st.session_state.image_visible
+        # # Toggle image visibility when the button is clicked
+        # if st.button("Operator"):
+        #     st.session_state.image_visible = not st.session_state.image_visible
 
-        # Display the image if the session state variable is True
-        if st.session_state.image_visible:
-            st.image('./Images/Ashot Nikoghosyan.JPG', caption='Ashot Nikoghosyan', width=200)
+        # # Display the image if the session state variable is True
+        # if st.session_state.image_visible:
+        st.image('./Images/Ashot Nikoghosyan.JPG', caption='Ashot Nikoghosyan', width=200)
+
 
     st.divider()
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown("##### Call ID - {}".format('12d4'))
-        st.markdown("##### Call Topic - {}".format('Card Transaction'))
+        st.markdown("##### Call ID - {}".format('13b3'))
+        st.markdown("##### Call Topic - {}".format('Card Issues'))
         
     with col3:
         st.markdown("##### Call Duration - {} min {} seconds".format('3','24'))
         st.markdown("##### Call Datetime - {}".format('12/11/2023 23:12:05'))
-     
-    st.divider()
-
-    
-
 
     st.divider()
 
@@ -157,17 +150,66 @@ def individual_call():
         st.caption("Costumer Care")
         chart.create_custom_pie_chart(progress=85, hole=0.7, color=['yellow', 'rgba(0,0,0,0)'], percentage=True)
 
+
+    st.markdown("### MoodMap")
+
+    tab1, tab2 = st.tabs(["Costumer", "Agent"])
+    with tab1:
+        chart.generate_emotion_plot([1,2,2,1,4,3,3,4,2,3])
+    with tab2:
+        chart.generate_emotion_plot([4,4,3,4,2,1,4,3,2,4,4,4])
+
     
 
+        
+def login():
+
+    st.image('./Images/logo.png', )#width=200)
+
+    username = st.text_input('Username')
+    password = st.text_input('Password', type='password')
+
+    if st.button('Login'):
+        # Replace this section with your actual authentication logic
+        if username == 'moodmap' and password == 'moodmap':
+            st.success('Logged in successfully!')
+            st.session_state.is_logged_in = True
+            st.experimental_rerun()
+        else:
+            st.error('Incorrect username or password')
+
 def main():
-    st.set_page_config(page_title='Dashboard', layout='wide')
+    st.set_page_config( 
+        page_title='MoodMap.ai', 
+        layout='wide'
+    )
 
-    page = st.sidebar.selectbox("Go to", ["Dashboard", "Individual Call"])
 
-    if page == "Dashboard":
-        dashboard()
-    elif page == "Individual Call":
-        individual_call()
+    if 'is_logged_in' not in st.session_state:
+        st.session_state.is_logged_in = False
+
+
+
+    if not st.session_state.is_logged_in:
+        login()
+    else:
+        page = st.sidebar.selectbox("Go to", ["Dashboard", "Individual Call"])
+
+        if page == "Dashboard":
+            dashboard()
+    
+        if page == "Individual Call":
+            st.sidebar.divider()
+            call_id = st.sidebar.text_input('Call ID')
+            search_button_clicked = st.sidebar.button("Search", type="primary")
+
+            if search_button_clicked:
+                individual_call()
+        
 
 if __name__ == "__main__":
     main()
+
+
+
+

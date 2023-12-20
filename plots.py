@@ -1,6 +1,7 @@
 import plotly.express as px
 import streamlit as st
 import plotly.graph_objects as go
+import pandas as pd
 
 class CustomPieChart:
     def __init__(self):
@@ -139,4 +140,55 @@ class CustomPieChart:
             paper_bgcolor='rgb(16,18,22)'
         )
 
+        st.plotly_chart(self.fig)
+
+    def generate_emotion_plot(self,input_histogram):
+        df = pd.DataFrame({'Emotion': input_histogram})
+
+        emotion_mapping = {1: 'Angry', 2: 'Sad', 3: 'Neutral', 4: 'Happy'}
+
+        df['Emotion'] = df['Emotion'].map(emotion_mapping)
+
+        emoji_mapping = {'Angry': '😡', 'Sad': '😢', 'Neutral': '😐', 'Happy': '😊'}
+
+        fixed_order_with_emojis = ['Angry', 'Sad', 'Neutral', 'Happy']
+        fixed_order_emojis_with_text = [f'{emoji_mapping[emotion]} {emotion}' for emotion in fixed_order_with_emojis]
+
+        self.fig = px.line(df, x=df.index * 3, y='Emotion', markers=True, line_shape='spline')
+
+        layout = {
+            'height': 400,
+            'width': 1000,
+            'yaxis': {
+                'title': 'Emotions',
+                'tickmode': 'array',
+                'ticktext': fixed_order_emojis_with_text,
+                'tickvals': fixed_order_with_emojis,
+                'categoryorder': 'array',
+                'categoryarray': fixed_order_with_emojis,
+                'tickfont': {'size': 16, 'color': 'white'},
+                'showgrid': True,
+                'gridwidth': 0.1,
+                'gridcolor': 'grey'
+            },
+            'xaxis':{
+                 'title': 'Duration',
+                 'showgrid': False
+            },
+            'plot_bgcolor': 'rgb(16,18,22)',#'snow',
+            'paper_bgcolor': 'rgb(16,18,22)',
+            'font': {'family': 'Arial', 'size': 12, 'color': 'white'},
+            'showlegend': False
+
+        }
+
+
+        self.fig.update_layout(**layout)
+        self.fig.update_traces(
+            marker=dict(size=8, line=dict(width=2, color='deeppink'), color='deeppink'),
+            line=dict(color='snow', width=3),
+            hovertemplate=f'Second: %{{x}}<br>{self.fig.data[0].name} Emotion: %{{text}}',
+            text=self.fig.data[0]['y']
+        )
+        
         st.plotly_chart(self.fig)
