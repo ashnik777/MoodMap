@@ -2,6 +2,7 @@ import streamlit as st
 from plots import CustomPieChart
 import pandas as pd
 import numpy as np
+import json
 
 
 
@@ -91,36 +92,30 @@ def dashboard():
 
     col1, col2, col3 = st.columns(3)
 
-    with col1:
-        st.caption("Top Call Aspects")
-        df = pd.read_csv('Call_topics.csv',index_col=0)
-        st.write(df)
+    with col3:
+        with open('topics.json', 'r') as file:
+            loaded_data = json.load(file)
+
+        st.caption("Top Call Topics")
+        chart.plot_top_topics(loaded_data)
+        
     with col2:
         st.caption("Analysis of irony across calls")
         chart.create_pie_chart_ironic_ornot(ironic_count=15,non_ironic_count=60)
-    with col3:
+    with col1:
         st.caption("Hate speech analysis across calls")
         chart.create_hate_speech_pie_chart(hateful_count = 5, targeted_count = 12, aggressive_count = 6, Normal = 45)
     
 
 def individual_call():
 
+    st.sidebar.markdown('#### Agent')
+    st.sidebar.image('./Images/Ashot Nikoghosyan.JPG', caption='Ashot Nikoghosyan', width=200)
+
     col1, col2, col3 = st.columns(3)
     with col1:
         st.title("Call Report")
-    with col3:
-        st.markdown('#### Operator')
-        # # Initialize a session state variable to track image visibility
-        # if "image_visible" not in st.session_state:
-        #     st.session_state.image_visible = False
 
-        # # Toggle image visibility when the button is clicked
-        # if st.button("Operator"):
-        #     st.session_state.image_visible = not st.session_state.image_visible
-
-        # # Display the image if the session state variable is True
-        # if st.session_state.image_visible:
-        st.image('./Images/Ashot Nikoghosyan.JPG', caption='Ashot Nikoghosyan', width=200)
 
 
     st.divider()

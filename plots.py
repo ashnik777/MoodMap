@@ -119,7 +119,7 @@ class CustomPieChart:
         self.fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='none')])
         self.fig.update_layout(
             width=300,
-            height=300,
+            height=400,
             plot_bgcolor='rgb(16,18,22)',
             paper_bgcolor='rgb(16,18,22)'
         )
@@ -135,7 +135,7 @@ class CustomPieChart:
         self.fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='none')])
         self.fig.update_layout(
             width=300,
-            height=300,
+            height=400,
             plot_bgcolor='rgb(16,18,22)',
             paper_bgcolor='rgb(16,18,22)'
         )
@@ -191,4 +191,28 @@ class CustomPieChart:
             text=self.fig.data[0]['y']
         )
         
+        st.plotly_chart(self.fig)
+
+    def plot_top_topics(self,data):
+        # Create DataFrame
+        df = pd.DataFrame(data)
+    
+        # Count the occurrences of each topic and sort by frequency in ascending order
+        top_topics = df['topics'].value_counts().head(10).sort_values(ascending=True)
+    
+        # Create a DataFrame from the value counts
+        top_topics_df = top_topics.reset_index()
+        top_topics_df.columns = ['Topics', 'Frequency']
+    
+        # Plotting using Plotly
+        self.fig = px.bar(top_topics_df, x='Frequency', y='Topics', orientation='h')
+        self.fig.update_layout(
+            plot_bgcolor='rgb(16,18,22)',
+            paper_bgcolor='rgb(16,18,22)',  # Change background color to light gray
+            width=300,  # Adjust width of the plot
+            height=400,  # Adjust height of the plot
+            xaxis=dict(showgrid=False, title='', tickvals=[]),  # Remove vertical gridlines
+            yaxis=dict(showgrid=False, title=''),  # Remove horizontal gridlines
+            font=dict(color='white')
+        )
         st.plotly_chart(self.fig)
