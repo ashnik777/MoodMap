@@ -20,6 +20,8 @@ class CustomPieChart:
 
         remaining_progress = 100 - self.progress
 
+        self.color = ['red' if progress <= 60 else 'orange' if progress <= 80 else 'green', 'rgba(0,0,0,0)']
+
         self.fig = px.pie(values=[self.progress, remaining_progress], names=['Progress', 'Remaining'],
                           hole=self.hole, color_discrete_sequence=self.color)
 
