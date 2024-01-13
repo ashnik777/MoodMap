@@ -1,0 +1,7 @@
+{
+    "dbname": "moodmap_db",
+    "user": "postgres",
+    "password": "9b6b09d4a1",
+    "host": "localhost",
+    "port": "5432"
+  }

@@ -3,6 +3,19 @@ from plots import CustomPieChart
 import pandas as pd
 import numpy as np
 import json
+import psycopg2
+from sqlalchemy import create_engine
+
+def read_data():
+    with open('connection.json', 'r') as file:
+        db_config = json.load(file)
+
+    # Create a connection string
+    conn_str = f"postgresql://{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['dbname']}"
+    engine = create_engine(conn_str)
+    return engine
+
+
 
 
 
@@ -107,9 +120,17 @@ def dashboard():
         st.caption("Hate speech analysis across calls")
         chart.create_hate_speech_pie_chart(hateful_count = 5, targeted_count = 12, aggressive_count = 6, Normal = 45)
     
-    
+    ################################################
+    st.divider()
 
-    
+
+
+
+    ### Importing Data Frame 
+    call_info = pd.read_csv('Call_information.csv',index_col=0)
+    st.write(call_info)
+
+    ################################################
 
 def individual_call():
 
@@ -152,9 +173,17 @@ def individual_call():
 
     st.markdown("### MoodMap")
 
+    sql_query = """SELECT * FROM public.call_mood_agent
+            ORDER BY callid ASC, starttime ASC, endtime ASC LIMIT 100"""
+    df_em = pd.read_sql_query(sql_query, read_data())
+    df_em.emotion = np.where(df_em.emotion == 'angry',1,df_em.emotion)
+    df_em.emotion = np.where(df_em.emotion == 'sad',2,df_em.emotion)
+    df_em.emotion = np.where(df_em.emotion == 'neutral',3,df_em.emotion)
+    df_em.emotion = np.where(df_em.emotion == 'happy',4,df_em.emotion)
+
     tab1, tab2 = st.tabs(["Customer", "Agent"])
     with tab1:
-        chart.generate_emotion_plot([1,2,2,1,4,3,3,4,2,3])
+        chart.generate_emotion_plot(list(df_em.emotion))
     with tab2:
         chart.generate_emotion_plot([4,4,3,4,2,1,4,3,2,4,4,4])
 
