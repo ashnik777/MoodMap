@@ -2,6 +2,7 @@ import plotly.express as px
 import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
+import time
 
 class CustomPieChart:
     def __init__(self):
@@ -218,3 +219,70 @@ class CustomPieChart:
             font=dict(color='white')
         )
         st.plotly_chart(self.fig)
+
+    
+
+
+
+    def generate_text_emotion_plot(self,input_histogram):
+        df = pd.DataFrame({'Emotion': input_histogram})
+
+        emotion_mapping = {1: 'Negative', 2: 'Neutral', 3: 'Positive'}
+
+        df['Emotion'] = df['Emotion'].map(emotion_mapping)
+
+        emoji_mapping = {'Negative': '😡', 'Neutral': '😐', 'Positive': '😊'}
+
+        fixed_order_with_emojis = ['Negative', 'Neutral', 'Positive']
+        fixed_order_emojis_with_text = [f'{emoji_mapping[emotion]} {emotion}' for emotion in fixed_order_with_emojis]
+
+        self.fig = px.line(df, x=df.index * 3, y='Emotion', markers=True, line_shape='spline')
+
+        layout = {
+            'height': 400,
+            'width': 1000,
+            'yaxis': {
+                'title': 'Emotions',
+                'tickmode': 'array',
+                'ticktext': fixed_order_emojis_with_text,
+                'tickvals': fixed_order_with_emojis,
+                'categoryorder': 'array',
+                'categoryarray': fixed_order_with_emojis,
+                'tickfont': {'size': 16, 'color': 'white'},
+                'showgrid': True,
+                'gridwidth': 0.1,
+                'gridcolor': 'grey'
+            },
+            'xaxis':{
+                 'title': 'Duration',
+                 'showgrid': False
+            },
+            'plot_bgcolor': 'rgb(16,18,22)',#'snow',
+            'paper_bgcolor': 'rgb(16,18,22)',
+            'font': {'family': 'Arial', 'size': 12, 'color': 'white'},
+            'showlegend': False
+
+        }
+
+
+        self.fig.update_layout(**layout)
+        self.fig.update_traces(
+            marker=dict(size=8, line=dict(width=2, color='deeppink'), color='deeppink'),
+            line=dict(color='snow', width=3),
+            hovertemplate=f'Second: %{{x}}<br>{self.fig.data[0].name} Emotion: %{{text}}',
+            text=self.fig.data[0]['y']
+        )
+        
+        st.plotly_chart(self.fig)
+
+    def warning_function(self):
+        alert_icon_placeholder = st.empty()
+        animation_counter = 0
+
+        while True:
+            if animation_counter % 2 == 0:
+                alert_icon_placeholder.markdown("⚠️", unsafe_allow_html=True)
+            else:
+                alert_icon_placeholder.empty()
+            animation_counter += 1
+            time.sleep(0.5)
