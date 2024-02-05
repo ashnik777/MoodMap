@@ -5,19 +5,17 @@ import numpy as np
 import json
 import time
 import threading
+import psycopg2
+from sqlalchemy import create_engine
 
+def read_data():
+    with open('connection.json', 'r') as file:
+        db_config = json.load(file)
 
-# import psycopg2
-# from sqlalchemy import create_engine
-
-# def read_data():
-#     with open('connection.json', 'r') as file:
-#         db_config = json.load(file)
-
-#     # Create a connection string
-#     conn_str = f"postgresql://{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['dbname']}"
-#     engine = create_engine(conn_str)
-#     return engine
+    # Create a connection string
+    conn_str = f"postgresql://{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['dbname']}"
+    engine = create_engine(conn_str)
+    return engine
 
 
 
@@ -33,17 +31,25 @@ def dashboard():
     # Filters block
     st.sidebar.divider()
     primary_btn = st.sidebar.button(label="Filter", type="primary")
+
+    if primary_btn:
+        print(23234234345)
+
     start_date = st.sidebar.date_input("Start Date")
     end_date = st.sidebar.date_input("End Date")
     st.sidebar.divider()
-    start_emotion = st.sidebar.selectbox("Customer Start emotion", options=['All','Happy','Neutral','Sad','Angry'], index=0)
-    end_emotion = st.sidebar.selectbox("Customer End emotion", options=['All','Happy','Neutral','Sad','Angry'], index=0)
-    st.sidebar.divider()
     satisfaction_level = st.sidebar.selectbox("Customer satisfaction level", options=['All','(0-25)%','(25-50)%','(50-75)%','(75-100)%'], index=0)
-    st.sidebar.divider()
+    #st.sidebar.divider()
     performance_level = st.sidebar.selectbox("Agent performance level", options=['All','(0-25)%','(25-50)%','(50-75)%','(75-100)%'], index=0)
-    st.sidebar.divider()
+    
     agent_id = st.sidebar.selectbox("Agent", options=['All','John','Arsen','David','Karen'], index=0)
+    st.sidebar.divider()
+    Topic_search = st.sidebar.text_input('Search Via Topic')
+
+    
+    Topic_search_button_clicked = st.sidebar.button("Search", type="primary")
+
+
     col1, col2, col3 = st.columns(3)
     col1.metric(label="Total Calls", value=50)
     col2.metric(label="Satisfied calls", value=30, delta=10)
@@ -138,8 +144,13 @@ def dashboard():
 
     st.caption("Last Calls")
 
-    ### Importing Data Frame 
-    call_info = pd.read_csv('Call_information.csv',index_col=0)
+    # Replace this with your SQL query
+    query_call = """SELECT * FROM public.call
+    ORDER BY id ASC LIMIT 100"""
+    ### Importing Data Frame
+    call_info = pd.read_sql_query(query_call, read_data())
+
+    #call_info = pd.read_csv('Call_information.csv',index_col=0)
     st.write(call_info)
 
     ################################################
