@@ -129,10 +129,10 @@ class CustomPieChart:
 
         st.plotly_chart(self.fig)
 
-    def create_hate_speech_pie_chart(self,hateful_count, targeted_count, aggressive_count, Normal):
+    def create_hate_speech_pie_chart(self,hateful_count, not_hateful_count):
         # Create data for Pie chart
-        labels = ['Hateful', 'Targeted', 'Aggressive', 'Normal']
-        values = [hateful_count, targeted_count, aggressive_count, Normal]
+        labels = ['Hateful', 'Normal']
+        values = [hateful_count, not_hateful_count]
 
         # Create Pie chart
         self.fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='none')])
@@ -144,6 +144,22 @@ class CustomPieChart:
         )
 
         st.plotly_chart(self.fig)
+
+    # def create_hate_speech_pie_chart(self,hateful_count, targeted_count, aggressive_count, Normal):
+    #     # Create data for Pie chart
+    #     labels = ['Hateful', 'Targeted', 'Aggressive', 'Normal']
+    #     values = [hateful_count, targeted_count, aggressive_count, Normal]
+
+    #     # Create Pie chart
+    #     self.fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='none')])
+    #     self.fig.update_layout(
+    #         width=300,
+    #         height=400,
+    #         plot_bgcolor='rgb(16,18,22)',
+    #         paper_bgcolor='rgb(16,18,22)'
+    #     )
+
+    #     st.plotly_chart(self.fig)
 
     def generate_emotion_plot(self,input_histogram):
         df = pd.DataFrame({'Emotion': input_histogram})
@@ -197,11 +213,9 @@ class CustomPieChart:
         st.plotly_chart(self.fig)
 
     def plot_top_topics(self,data):
-        # Create DataFrame
-        df = pd.DataFrame(data)
     
         # Count the occurrences of each topic and sort by frequency in ascending order
-        top_topics = df['topics'].value_counts().head(10).sort_values(ascending=True)
+        top_topics = data.value_counts().head(10).sort_values(ascending=True)
     
         # Create a DataFrame from the value counts
         top_topics_df = top_topics.reset_index()
@@ -275,14 +289,3 @@ class CustomPieChart:
         
         st.plotly_chart(self.fig)
 
-    def warning_function(self):
-        alert_icon_placeholder = st.empty()
-        animation_counter = 0
-
-        while True:
-            if animation_counter % 2 == 0:
-                alert_icon_placeholder.markdown("⚠️", unsafe_allow_html=True)
-            else:
-                alert_icon_placeholder.empty()
-            animation_counter += 1
-            time.sleep(0.5)

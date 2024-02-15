@@ -32,24 +32,40 @@ def dashboard():
     st.sidebar.divider()
     primary_btn = st.sidebar.button(label="Filter", type="primary")
 
-    if primary_btn:
-        print(23234234345)
 
     start_date = st.sidebar.date_input("Start Date")
     end_date = st.sidebar.date_input("End Date")
+    
     st.sidebar.divider()
     satisfaction_level = st.sidebar.selectbox("Customer satisfaction level", options=['All','(0-25)%','(25-50)%','(50-75)%','(75-100)%'], index=0)
     #st.sidebar.divider()
     performance_level = st.sidebar.selectbox("Agent performance level", options=['All','(0-25)%','(25-50)%','(50-75)%','(75-100)%'], index=0)
     
-    agent_id = st.sidebar.selectbox("Agent", options=['All','John','Arsen','David','Karen'], index=0)
+    agent = st.sidebar.selectbox("Agent", options=['All','John','Arsen','David','Karen'], index=0)
     st.sidebar.divider()
     Topic_search = st.sidebar.text_input('Search Via Topic')
 
-    
     Topic_search_button_clicked = st.sidebar.button("Search", type="primary")
+    filter_dict = {}
+    if primary_btn:      
+        filter_dict = {'start_date':start_date,'end_date':end_date,'satisfaction_level':satisfaction_level,
+                       'performance_level':performance_level,'agent':agent}
+        print(filter_dict)
 
+     # Replace this with your SQL query
+    try:
+        query_call = """SELECT * FROM public.call
+                    WHERE starttime > '{x}' and endtime < '{y}';""".format(x=filter_dict['start_date'],y=filter_dict['end_date'])
+        call_info = pd.read_sql_query(query_call, read_data())
+        print(call_info)
+    except:
+        print('not')
 
+    
+    
+    
+
+    # ### Importing Data Frame
     col1, col2, col3 = st.columns(3)
     col1.metric(label="Total Calls", value=50)
     col2.metric(label="Satisfied calls", value=30, delta=10)
@@ -264,6 +280,8 @@ def main():
             st.sidebar.divider()
             call_id = st.sidebar.text_input('Call ID')
             search_button_clicked = st.sidebar.button("Search", type="primary")
+
+            
 
             if search_button_clicked and call_id == '13b3':
                 individual_call()
