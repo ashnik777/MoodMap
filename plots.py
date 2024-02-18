@@ -117,9 +117,10 @@ class CustomPieChart:
         # Create data for Pie chart
         labels = ['Ironic', 'Not Ironic']
         values = [ironic_count, non_ironic_count]
+        colors = ['#FFA500', '#2E8B57']
 
         # Create Pie chart
-        self.fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='none')])
+        self.fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='none',marker = dict(colors=colors))])
         self.fig.update_layout(
             width=300,
             height=400,
@@ -133,7 +134,24 @@ class CustomPieChart:
         # Create data for Pie chart
         labels = ['Hateful', 'Normal']
         values = [hateful_count, not_hateful_count]
+        colors = ['#FFA500', '#2E8B57']
 
+        # Create Pie chart
+        self.fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='none',marker = dict(colors=colors))])
+        self.fig.update_layout(
+            width=300,
+            height=400,
+            plot_bgcolor='rgb(16,18,22)',
+            paper_bgcolor='rgb(16,18,22)'
+        )
+
+        st.plotly_chart(self.fig)
+
+    def create_silence_pie_chart(self,silence, not_silence):
+        # Create data for Pie chart
+        labels = ['silence', 'Not Silence']
+        values = [silence, not_silence]
+        
         # Create Pie chart
         self.fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='none')])
         self.fig.update_layout(
@@ -144,6 +162,8 @@ class CustomPieChart:
         )
 
         st.plotly_chart(self.fig)
+    
+    
 
     # def create_hate_speech_pie_chart(self,hateful_count, targeted_count, aggressive_count, Normal):
     #     # Create data for Pie chart

@@ -18,7 +18,12 @@ def read_data():
     engine = create_engine(conn_str)
     return engine
 
-def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance_level):
+def get_agents_data():
+    query = """SELECT * FROM public.agent"""
+    agents = pd.read_sql_query(query, read_data())
+    return agents
+
+def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance_level,agent):
 
     if satisfaction_level == 'All':
         satisfaction_level = [0,100]
@@ -30,29 +35,44 @@ def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance
     else:
         performance_level = [int(num) for num in re.findall(r'\d+', performance_level)]
 
+    # if alert_calls == 'Alerting Calls':
+    #     # Replace this with your SQL query
+    #     query_call_info = """SELECT * FROM public.callinfo
+    #                      WHERE customer_satisfaction_rate  > {c_s_0} and customer_satisfaction_rate < {c_s_1} and alert =1;""".format(c_s_0=satisfaction_level[0],c_s_1=satisfaction_level[1])
+    # else:
+    #     # Replace this with your SQL query
+    #     query_call_info = """SELECT * FROM public.callinfo
+    #                      WHERE customer_satisfaction_rate  > {c_s_0} and customer_satisfaction_rate < {c_s_1};""".format(c_s_0=satisfaction_level[0],c_s_1=satisfaction_level[1])
+
+
     if alert_calls == 'Alerting Calls':
         # Replace this with your SQL query
         query_call_info = """SELECT * FROM public.callinfo
-                         WHERE customer_satisfaction_rate  > {c_s_0} and customer_satisfaction_rate < {c_s_1} and alert =1;""".format(c_s_0=satisfaction_level[0],c_s_1=satisfaction_level[1])
+                         WHERE customer_satisfaction_rate  > {c_s_0} and customer_satisfaction_rate < {c_s_1} 
+                         and agent_performance_rate > {a_p_0} and agent_performance_rate < {a_p_1} and alert = 1;""".format(c_s_0=satisfaction_level[0],c_s_1=satisfaction_level[1],a_p_0=performance_level[0],a_p_1=performance_level[1])
     else:
         # Replace this with your SQL query
         query_call_info = """SELECT * FROM public.callinfo
-                         WHERE customer_satisfaction_rate  > {c_s_0} and customer_satisfaction_rate < {c_s_1};""".format(c_s_0=satisfaction_level[0],c_s_1=satisfaction_level[1])
+                         WHERE customer_satisfaction_rate  > {c_s_0} and customer_satisfaction_rate < {c_s_1} 
+                         and agent_performance_rate > {a_p_0} and agent_performance_rate < {a_p_1};""".format(c_s_0=satisfaction_level[0],c_s_1=satisfaction_level[1],a_p_0=performance_level[0],a_p_1=performance_level[1])
 
-
+    
     
     # Replace this with your SQL query
     query_call = """SELECT * FROM public.call
                             WHERE starttime > '{s_d}' and endtime < '{e_d}';""".format(s_d=start_date,e_d=end_date)
 
-    # # Replace this with your SQL query
-    # query_call_info = """SELECT * FROM public.callinfo
-    #                      WHERE customer_satisfaction_rate  > {c_s_0} and customer_satisfaction_rate < {c_s_1};""".format(c_s_0=satisfaction_level[0],c_s_1=satisfaction_level[1])
-
+    
+    
     df_call = pd.read_sql_query(query_call, read_data())
     df_call_info = pd.read_sql_query(query_call_info, read_data())
 
     df = pd.merge(df_call,df_call_info,how='inner',on='callid')
+
+    if agent != 'All':
+        id = get_agents_data()[get_agents_data().username == agent].id[0]
+        df = df[df.agentid == id]
+
 
     # Replace this with your SQL query
     query_clint_voice_emotion = """
@@ -69,7 +89,6 @@ def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance
                         WHERE callid IN {}
                             """.format(tuple(df.callid))
     
-    print(query_agent_voice_emotion)
     agent_voice_emotion = pd.read_sql_query(query_agent_voice_emotion, read_data())
 
     # Replace this with your SQL query
@@ -111,12 +130,20 @@ def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance
     agent_perf_rate = int(df.agent_performance_rate.mean())
     costumer_care = int(df.callscore.mean())
     call_topics = df[['topic']]
-    ironic_count = np.where(df.ironypercent > 30,1,0).sum()
-    not_ironic_count = (1 - np.where(df.ironypercent > 30,1,0)).sum()
-    hateful_count = np.where(df.hatespeechpercent > 30,1,0).sum()
-    not_hateful_count = (1 - np.where(df.hatespeechpercent > 30,1,0)).sum()
-    satisfied = df.satisfied.value_counts()[0]
-    not_satisfied = df.satisfied.value_counts()[1]
+
+    client_ironic_count = np.where(df.client_ironypercent > 30,1,0).sum()
+    agent_ironic_count = np.where(df.agent_ironypercent > 30,1,0).sum()
+    client_not_ironic_count = (1 - np.where(df.client_ironypercent > 30,1,0)).sum()
+    agent_not_ironic_count = (1 - np.where(df.agent_ironypercent > 30,1,0)).sum()
+
+    client_hateful_count = np.where(df.client_hatespeechpercent > 30,1,0).sum()
+    agent_hateful_count = np.where(df.agent_hatespeechpercent > 30,1,0).sum()
+    client_not_hateful_count = (1 - np.where(df.client_hatespeechpercent > 30,1,0)).sum()
+    agent_not_hateful_count = (1 - np.where(df.agent_hatespeechpercent > 30,1,0)).sum()
+
+    satisfied = df.satisfied.sum()
+    
+    not_satisfied = (1-df.satisfied).sum()
 
     metrics_dict = {
                         'df':df,
@@ -134,10 +161,14 @@ def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance
                         'agent_perf_rate':agent_perf_rate,
                         'costumer_care':costumer_care,
                         'call_topics':call_topics,
-                        'ironic_count':ironic_count,
-                        'not_ironic_count':not_ironic_count,
-                        'hateful_count':hateful_count,
-                        'not_hateful_count':not_hateful_count,
+                        'client_ironic_count':client_ironic_count,
+                        'agent_ironic_count':agent_ironic_count,
+                        'client_not_ironic_count':client_not_ironic_count,
+                        'agent_not_ironic_count':agent_not_ironic_count,
+                        'client_hateful_count':client_hateful_count,
+                        'agent_hateful_count':agent_hateful_count,
+                        'client_not_hateful_count':client_not_hateful_count,
+                        'agent_not_hateful_count':agent_not_hateful_count,
                         'satisfied':satisfied,
                         'not_satisfied':not_satisfied
     }
@@ -145,6 +176,7 @@ def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance
     return metrics_dict
 
 def get_ind_data(call_id):
+
     query_call_info = """SELECT * FROM public.callinfo
                          where callid = {}""".format(call_id)
     query_call = """SELECT * FROM public.call
@@ -168,19 +200,40 @@ def get_ind_data(call_id):
                             """.format(call_id)
     agent_text_emotion = pd.read_sql_query(query_agent_text_emotion, read_data())
 
-    call_id
+    
     topic = df.topic[0]
     duration = df.duration[0]
     datetime = df.starttime[0]
     customer_satisfaction_rate = df.customer_satisfaction_rate[0]
     agent_performance_rate = df.agent_performance_rate[0]
     callscore = df.callscore[0]
-    emotion_client = list(clint_text_emotion.emotion_in_numbers)[::-1]
-    emotion_agent = list(agent_text_emotion.emotion_in_numbers)
+    emotion_client = list(clint_text_emotion.emotion_in_number)[::-1]
+    emotion_agent = list(agent_text_emotion.emotion_in_number)
+    satisfaction = df.satisfied[0]
+    
+    client_ironypercent = df.client_ironypercent[0]
+    agent_ironypercent = df.agent_ironypercent[0]
+    client_hatepercent = df.client_hatespeechpercent[0]
+    agent_hatepercent = df.agent_hatespeechpercent[0]
 
-    dict_met = {'call_id':call_id,'topic':topic,'duration':duration,'datetime':datetime,
-                'customer_satisfaction_rate':customer_satisfaction_rate,'agent_performance_rate':agent_performance_rate,
-                'callscore':callscore,'emotion_client':emotion_client,'emotion_agent':emotion_agent}
+    silence = df.silencepercent[0]
+
+    dict_met = {'call_id':call_id,
+                'topic':topic,
+                'duration':duration,
+                'datetime':datetime,
+                'customer_satisfaction_rate':customer_satisfaction_rate,
+                'agent_performance_rate':agent_performance_rate,
+                'callscore':callscore,
+                'emotion_client':emotion_client,
+                'emotion_agent':emotion_agent,
+                'satisfaction':satisfaction,
+                'client_ironypercent':client_ironypercent,
+                'agent_ironypercent':agent_ironypercent,
+                'client_hatepercent':client_hatepercent,
+                'agent_hatepercent':agent_hatepercent,
+                'silence':silence}
+    
     return dict_met
 
 ################################
@@ -194,8 +247,8 @@ def dashboard(metrics_dict):
 
     col1, col2, col3 = st.columns(3)
     col1.metric(label="Total Calls", value=metrics_dict['tatal_calls'])
-    col2.metric(label="Satisfied calls", value=metrics_dict['satisfied'], delta=10)
-    col3.metric(label="Not Satisfied calls", value=metrics_dict['not_satisfied'], delta=-10,delta_color="inverse")
+    col2.metric(label="Satisfied calls", value=metrics_dict['satisfied'])
+    col3.metric(label="Not Satisfied calls", value=metrics_dict['not_satisfied'])
     st.divider()
     
     col1, col2 = st.columns(2) #, col3 = st.columns(3)
@@ -264,21 +317,30 @@ def dashboard(metrics_dict):
 
     st.divider()
 
-    col1, col2, col3 = st.columns(3)
-
-    with col3:
-        # with open('topics.json', 'r') as file:
-        #     loaded_data = json.load(file)
-
-        st.caption("Top Call Topics")
-        chart.plot_top_topics(metrics_dict['call_topics'])
-        
-    with col2:
-        st.caption("Analysis of irony across calls")
-        chart.create_pie_chart_ironic_ornot(ironic_count=metrics_dict['ironic_count'],non_ironic_count=metrics_dict['not_ironic_count'])
-    with col1:
-        st.caption("Hate speech analysis across calls")
-        chart.create_hate_speech_pie_chart(hateful_count = metrics_dict['hateful_count'], not_hateful_count = metrics_dict['not_hateful_count'])
+    tab1, tab2 = st.tabs(["Customers", "Agents"])
+    with tab1:
+        col1, col2, col3 = st.columns(3)
+        with col3:
+            st.caption("Top Call Topics")
+            chart.plot_top_topics(metrics_dict['call_topics'])
+        with col2:
+            st.caption("Analysis of irony across calls")
+            chart.create_pie_chart_ironic_ornot(ironic_count=metrics_dict['client_ironic_count'],non_ironic_count=metrics_dict['client_not_ironic_count'])
+        with col1:
+            st.caption("Hate speech analysis across calls")
+            chart.create_hate_speech_pie_chart(hateful_count = metrics_dict['client_hateful_count'], not_hateful_count = metrics_dict['client_not_hateful_count'])
+    ################################################
+    with tab2:
+        col1, col2, col3 = st.columns(3)
+        with col3:
+            st.caption("Top Call Topics")
+            chart.plot_top_topics(metrics_dict['call_topics'])
+        with col2:
+            st.caption("Analysis of irony across calls")
+            chart.create_pie_chart_ironic_ornot(ironic_count=metrics_dict['agent_ironic_count'],non_ironic_count=metrics_dict['agent_not_ironic_count'])
+        with col1:
+            st.caption("Hate speech analysis across calls")
+            chart.create_hate_speech_pie_chart(hateful_count = metrics_dict['agent_hateful_count'], not_hateful_count = metrics_dict['agent_not_hateful_count'])
     ################################################
     st.divider()
 
@@ -296,18 +358,20 @@ def individual_call(ind_metrics_dict):
     # st.sidebar.image('./Images/Ashot Nikoghosyan.JPG', caption='Ashot Nikoghosyan', width=200)
 
     col1, col2, col3 = st.columns(3)
-    with col1:
+    with col2:
         st.title("Call Report")
 
-
-
+    
     st.divider()
 
     col1, col2, col3 = st.columns(3)
     with col1:
         st.markdown("##### Call ID - {}".format(ind_metrics_dict['call_id']))
         st.markdown("##### Call Topic - {}".format(ind_metrics_dict['topic']))
-        st.markdown("##### Aspect - {}".format('Transaction problem`  Status - Solved \u2713'))
+        if ind_metrics_dict['satisfaction']:
+            st.markdown("##### Status - {}".format('Solved \u2713'))
+        else:
+            st.markdown("##### Status - {}".format('Unclear \u274c'))
         
         
     with col3:
@@ -355,6 +419,33 @@ def individual_call(ind_metrics_dict):
         chart.generate_text_emotion_plot([1,2,1,2,3,3,3])
     with tab2:
         chart.generate_text_emotion_plot([3,2,1,2,3,3,3,3,2,1,1,3])
+
+    st.divider()
+
+    tab1, tab2 = st.tabs(["Customer", "Agent"])
+    with tab1:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.caption("Hate speech percent")
+            chart.create_hate_speech_pie_chart(hateful_count = ind_metrics_dict['client_hatepercent'], not_hateful_count = (100-ind_metrics_dict['client_hatepercent']))
+        with col2:
+            st.caption("Irony speech percent")
+            chart.create_pie_chart_ironic_ornot(ironic_count=ind_metrics_dict['client_ironypercent'],non_ironic_count=(100-ind_metrics_dict['client_ironypercent']))
+        with col3:
+            st.caption("Irony speech percent")
+            chart.create_silence_pie_chart(silence=ind_metrics_dict['silence'],not_silence=(100-ind_metrics_dict['silence']))
+    with tab2:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.caption("Hate speech percent")
+            chart.create_hate_speech_pie_chart(hateful_count = ind_metrics_dict['agent_hatepercent'], not_hateful_count = (100-ind_metrics_dict['agent_hatepercent']))
+        with col2:
+            st.caption("Irony speech percent")
+            chart.create_pie_chart_ironic_ornot(ironic_count=ind_metrics_dict['agent_ironypercent'],non_ironic_count=(100-ind_metrics_dict['agent_ironypercent']))
+        with col3:
+            st.caption("Irony speech percent")
+            chart.create_silence_pie_chart(silence=ind_metrics_dict['silence'],not_silence=(100-ind_metrics_dict['silence']))
+    ################################################
     
 
         
@@ -373,6 +464,8 @@ def login():
             st.experimental_rerun()
         else:
             st.error('Incorrect username or password')
+
+
 
 def main():
     st.set_page_config( 
@@ -409,7 +502,9 @@ def main():
             #st.sidebar.divider()
             performance_level = st.sidebar.selectbox("Agent performance level", options=['All','(0-25)%','(25-50)%','(50-75)%','(75-100)%'], index=0)
 
-            agent = st.sidebar.selectbox("Agent", options=['All','John','Arsen','David','Karen'], index=0)
+
+            agent = st.sidebar.selectbox("Agent", options= ['All']+list(get_agents_data().username), index=0)
+
             st.sidebar.divider()
             Topic_search = st.sidebar.text_input('Search Via Topic')
 
@@ -419,13 +514,16 @@ def main():
                 filter_dict = {'alert_calls':alert_calls,'start_date':start_date,'end_date':end_date,'satisfaction_level':satisfaction_level,
                                'performance_level':performance_level,'agent':agent}
 
-                # metrics_dict = get_data_info(filter_dict['alert_calls'],filter_dict['start_date'],filter_dict['end_date'],filter_dict['satisfaction_level'],filter_dict['performance_level'])
-                # dashboard(metrics_dict)
-                try:
-                    metrics_dict = get_data_info(filter_dict['alert_calls'],filter_dict['start_date'],filter_dict['end_date'],filter_dict['satisfaction_level'],filter_dict['performance_level'])
-                    dashboard(metrics_dict)
-                except:
-                    print('not')
+                
+                metrics_dict = get_data_info(filter_dict['alert_calls'],filter_dict['start_date'],filter_dict['end_date'],filter_dict['satisfaction_level'],filter_dict['performance_level'],
+                                             filter_dict['agent'])
+                dashboard(metrics_dict)
+                # try:
+                #     metrics_dict = get_data_info(filter_dict['alert_calls'],filter_dict['start_date'],filter_dict['end_date'],filter_dict['satisfaction_level'],filter_dict['performance_level'],
+                #                                  filter_dict['agent'])
+                #     dashboard(metrics_dict)
+                # except:
+                #     print('not')
             
         
 
@@ -439,13 +537,13 @@ def main():
             
 
             if search_button_clicked:
-                # ind_metrics_dict = get_ind_data(call_id)
-                # individual_call(ind_metrics_dict)
-                try:
-                    ind_metrics_dict = get_ind_data(call_id)
-                    individual_call(ind_metrics_dict)
-                except:
-                    print('no')
+                ind_metrics_dict = get_ind_data(call_id)
+                individual_call(ind_metrics_dict)
+                # try:
+                #     ind_metrics_dict = get_ind_data(call_id)
+                #     individual_call(ind_metrics_dict)
+                # except:
+                #     print('no')
         
 
 if __name__ == "__main__":
