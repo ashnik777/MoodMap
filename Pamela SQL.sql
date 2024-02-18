@@ -20,7 +20,6 @@ CREATE TABLE Agent (
 -- Creating the Call table
 CREATE TABLE Call (
     Id SERIAL PRIMARY KEY,
-    CallId INT,
     StartTime TIMESTAMP,
     EndTime TIMESTAMP,
     AgentId INT,
@@ -32,8 +31,7 @@ CREATE TABLE Call (
 
 -- Creating the CallInfo table
 CREATE TABLE CallInfo (
-    Id SERIAL PRIMARY KEY,
-    CallId INT,
+    CallId INT PRIMARY KEY,
     Topic VARCHAR(60),
     ClientInterrupts INT,
     AgentInterrupts INT,
@@ -46,10 +44,11 @@ CREATE TABLE CallInfo (
     agent_ironypercent SMALLINT,
     customer_satisfaction_rate SMALLINT,
     agent_performance_rate SMALLINT,
-    alert INT,
-    satisfied INT,
+    alert boolean,
     FOREIGN KEY (CallId) REFERENCES Call(Id)
 );
+--satisfactiony poxel
+--alert boolean
 
 
 
@@ -59,11 +58,10 @@ CREATE TABLE Call_Mood_Agent (
     StartTime TIMESTAMP,
     EndTime TIMESTAMP,
     Emotion VARCHAR(10),
-    emotion_in_number INT,
     PRIMARY KEY (CallId, StartTime, EndTime),
     FOREIGN KEY (CallId) REFERENCES Call(Id)
 );
-
+--emotion_in_number INT, change 
 
 -- Creating the Call_Mood_Client table
 CREATE TABLE Call_Mood_Client (
@@ -71,11 +69,10 @@ CREATE TABLE Call_Mood_Client (
     StartTime TIMESTAMP,
     EndTime TIMESTAMP,
     Emotion VARCHAR(10),
-    emotion_in_number INT,
     PRIMARY KEY (CallId, StartTime, EndTime),
     FOREIGN KEY (CallId) REFERENCES Call(Id)
 );
-
+--emotion_in_number INT, change
 
 -- Creating the Call_Sentence_Agent table
 CREATE TABLE Call_Sentence_Agent (

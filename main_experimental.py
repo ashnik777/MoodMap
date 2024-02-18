@@ -49,7 +49,7 @@ def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance
         # Replace this with your SQL query
         query_call_info = """SELECT * FROM public.callinfo
                          WHERE customer_satisfaction_rate  > {c_s_0} and customer_satisfaction_rate < {c_s_1} 
-                         and agent_performance_rate > {a_p_0} and agent_performance_rate < {a_p_1} and alert = 1;""".format(c_s_0=satisfaction_level[0],c_s_1=satisfaction_level[1],a_p_0=performance_level[0],a_p_1=performance_level[1])
+                         and agent_performance_rate > {a_p_0} and agent_performance_rate < {a_p_1} and alert = True;""".format(c_s_0=satisfaction_level[0],c_s_1=satisfaction_level[1],a_p_0=performance_level[0],a_p_1=performance_level[1])
     else:
         # Replace this with your SQL query
         query_call_info = """SELECT * FROM public.callinfo
@@ -66,6 +66,7 @@ def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance
     
     df_call = pd.read_sql_query(query_call, read_data())
     df_call_info = pd.read_sql_query(query_call_info, read_data())
+    df_call.rename(columns={'id':'callid'},inplace=True)
 
     df = pd.merge(df_call,df_call_info,how='inner',on='callid')
 
@@ -107,7 +108,7 @@ def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance
 
     agent_text_emotion = pd.read_sql_query(query_agent_text_emotion, read_data())
 
-       # Extract emotions and counts
+    # Extract emotions and counts
     voice_emotions_clinet = pd.DataFrame(clint_voice_emotion.meanemotion.value_counts()).reset_index()['meanemotion'].tolist()
     voice_counts_client = pd.DataFrame(clint_voice_emotion.meanemotion.value_counts()).reset_index()['count'].tolist()
 
@@ -124,8 +125,9 @@ def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance
     text_emotions_agent = pd.DataFrame(agent_text_emotion.sentiment.value_counts()).reset_index()['sentiment'].tolist()
     text_counts_agent = pd.DataFrame(agent_text_emotion.sentiment.value_counts()).reset_index()['count'].tolist()
 
-    tatal_calls = len(df)
-    alerts = df.alert.value_counts()[1]
+    tatal_calls = len(df)    
+    alerts = (df.alert == True).sum()
+    
     customer_sat_level = int(df.customer_satisfaction_rate.mean())
     agent_perf_rate = int(df.agent_performance_rate.mean())
     costumer_care = int(df.callscore.mean())
@@ -140,10 +142,12 @@ def get_data_info(alert_calls,start_date,end_date,satisfaction_level,performance
     agent_hateful_count = np.where(df.agent_hatespeechpercent > 30,1,0).sum()
     client_not_hateful_count = (1 - np.where(df.client_hatespeechpercent > 30,1,0)).sum()
     agent_not_hateful_count = (1 - np.where(df.agent_hatespeechpercent > 30,1,0)).sum()
-
-    satisfied = df.satisfied.sum()
     
-    not_satisfied = (1-df.satisfied).sum()
+    
+
+    satisfied = np.where(df.customer_satisfaction_rate > 75, 1,0).sum()
+    
+    not_satisfied = np.where(df.customer_satisfaction_rate <= 75, 1,0).sum()
 
     metrics_dict = {
                         'df':df,
@@ -180,25 +184,26 @@ def get_ind_data(call_id):
     query_call_info = """SELECT * FROM public.callinfo
                          where callid = {}""".format(call_id)
     query_call = """SELECT * FROM public.call
-                         where callid = {}""".format(call_id)
+                         where id = {}""".format(call_id)
 
     df_call_info = pd.read_sql_query(query_call_info, read_data())
     df_call = pd.read_sql_query(query_call, read_data())
 
+    df_call.rename(columns={'id':'callid'},inplace=True)
     df = pd.merge(df_call,df_call_info,how='left',on='callid')
 
     # Replace this with your SQL query
-    query_clint_text_emotion = """
+    query_clint_voice_emotion = """
                         SELECT * FROM public.call_mood_agent
                         WHERE callid = {}
                             """.format(call_id)
-    clint_text_emotion = pd.read_sql_query(query_clint_text_emotion, read_data())
+    clint_voice_emotion = pd.read_sql_query(query_clint_voice_emotion, read_data())
     # Replace this with your SQL query
-    query_agent_text_emotion = """
+    query_agent_voice_emotion = """
                         SELECT * FROM public.call_mood_agent
                         WHERE callid = {}
                             """.format(call_id)
-    agent_text_emotion = pd.read_sql_query(query_agent_text_emotion, read_data())
+    agent_voice_emotion = pd.read_sql_query(query_agent_voice_emotion, read_data())
 
     
     topic = df.topic[0]
@@ -207,10 +212,24 @@ def get_ind_data(call_id):
     customer_satisfaction_rate = df.customer_satisfaction_rate[0]
     agent_performance_rate = df.agent_performance_rate[0]
     callscore = df.callscore[0]
-    emotion_client = list(clint_text_emotion.emotion_in_number)[::-1]
-    emotion_agent = list(agent_text_emotion.emotion_in_number)
-    satisfaction = df.satisfied[0]
+
+    clint_voice_emotion.emotion = np.where(clint_voice_emotion.emotion == 'Angry',1,clint_voice_emotion.emotion)
+    clint_voice_emotion.emotion = np.where(clint_voice_emotion.emotion == 'Sad',2,clint_voice_emotion.emotion)
+    clint_voice_emotion.emotion = np.where(clint_voice_emotion.emotion == 'Neutral',3,clint_voice_emotion.emotion)
+    clint_voice_emotion.emotion = np.where(clint_voice_emotion.emotion == 'Happy',4,clint_voice_emotion.emotion)
+    emotion_client = list(clint_voice_emotion.emotion)
     
+    agent_voice_emotion.emotion = np.where(agent_voice_emotion.emotion == 'Angry',1,agent_voice_emotion.emotion)
+    agent_voice_emotion.emotion = np.where(agent_voice_emotion.emotion == 'Sad',2,agent_voice_emotion.emotion)
+    agent_voice_emotion.emotion = np.where(agent_voice_emotion.emotion == 'Neutral',3,agent_voice_emotion.emotion)
+    agent_voice_emotion.emotion = np.where(agent_voice_emotion.emotion == 'Happy',4,agent_voice_emotion.emotion)
+    emotion_agent = list(agent_voice_emotion.emotion)
+
+    if customer_satisfaction_rate > 75:
+        satisfaction = 1
+    else:
+        satisfaction = 0
+
     client_ironypercent = df.client_ironypercent[0]
     agent_ironypercent = df.agent_ironypercent[0]
     client_hatepercent = df.client_hatespeechpercent[0]
@@ -407,6 +426,7 @@ def individual_call(ind_metrics_dict):
 
     tab1, tab2 = st.tabs(["Customer", "Agent"])
     with tab1:
+        print('****************',ind_metrics_dict['emotion_client'])
         chart.generate_emotion_plot(ind_metrics_dict['emotion_client'])
     with tab2:
         chart.generate_emotion_plot(ind_metrics_dict['emotion_agent'])
