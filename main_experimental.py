@@ -192,18 +192,35 @@ def get_ind_data(call_id):
     df_call.rename(columns={'id':'callid'},inplace=True)
     df = pd.merge(df_call,df_call_info,how='left',on='callid')
 
+    ###Get agent Name
+    query_agents = """
+                        SELECT * FROM public.agent
+                        WHERE id = {}
+                            """.format(df_call.agentid.values[0])
+    
+    agent_df = pd.read_sql_query(query_agents, read_data())
+    agent = agent_df.username.values[0]
+
+    ####  Voice Emotion
     # Replace this with your SQL query
-    query_clint_voice_emotion = """
-                        SELECT * FROM public.call_mood_agent
+    query_client_voice_emotion = """
+                        SELECT * FROM public.call_mood_client
                         WHERE callid = {}
                             """.format(call_id)
-    clint_voice_emotion = pd.read_sql_query(query_clint_voice_emotion, read_data())
+    client_voice_emotion = pd.read_sql_query(query_client_voice_emotion, read_data())
     # Replace this with your SQL query
     query_agent_voice_emotion = """
                         SELECT * FROM public.call_mood_agent
                         WHERE callid = {}
                             """.format(call_id)
     agent_voice_emotion = pd.read_sql_query(query_agent_voice_emotion, read_data())
+
+    ### Text emotion
+    query_client_text_emotion = """ SELECT * FROM public.call_sentence_client """
+    client_text_emotion = pd.read_sql_query(query_client_text_emotion, read_data())
+
+    query_agent_text_emotion = """ SELECT * FROM public.call_sentence_agent """
+    agent_text_emotion = pd.read_sql_query(query_agent_text_emotion, read_data())
 
     
     topic = df.topic[0]
@@ -213,17 +230,30 @@ def get_ind_data(call_id):
     agent_performance_rate = df.agent_performance_rate[0]
     callscore = df.callscore[0]
 
-    clint_voice_emotion.emotion = np.where(clint_voice_emotion.emotion == 'Angry',1,clint_voice_emotion.emotion)
-    clint_voice_emotion.emotion = np.where(clint_voice_emotion.emotion == 'Sad',2,clint_voice_emotion.emotion)
-    clint_voice_emotion.emotion = np.where(clint_voice_emotion.emotion == 'Neutral',3,clint_voice_emotion.emotion)
-    clint_voice_emotion.emotion = np.where(clint_voice_emotion.emotion == 'Happy',4,clint_voice_emotion.emotion)
-    emotion_client = list(clint_voice_emotion.emotion)
+    ## Voice Emotions
+    client_voice_emotion.emotion = np.where(client_voice_emotion.emotion == 'Angry',1,client_voice_emotion.emotion)
+    client_voice_emotion.emotion = np.where(client_voice_emotion.emotion == 'Sad',2,client_voice_emotion.emotion)
+    client_voice_emotion.emotion = np.where(client_voice_emotion.emotion == 'Neutral',3,client_voice_emotion.emotion)
+    client_voice_emotion.emotion = np.where(client_voice_emotion.emotion == 'Happy',4,client_voice_emotion.emotion)
+    emotion_client = list(client_voice_emotion.emotion)
     
     agent_voice_emotion.emotion = np.where(agent_voice_emotion.emotion == 'Angry',1,agent_voice_emotion.emotion)
     agent_voice_emotion.emotion = np.where(agent_voice_emotion.emotion == 'Sad',2,agent_voice_emotion.emotion)
     agent_voice_emotion.emotion = np.where(agent_voice_emotion.emotion == 'Neutral',3,agent_voice_emotion.emotion)
     agent_voice_emotion.emotion = np.where(agent_voice_emotion.emotion == 'Happy',4,agent_voice_emotion.emotion)
     emotion_agent = list(agent_voice_emotion.emotion)
+
+
+    ## Text Emotions
+    client_text_emotion.sentiment = np.where(client_text_emotion.sentiment == 'Negative',1,client_text_emotion.sentiment)
+    client_text_emotion.sentiment = np.where(client_text_emotion.sentiment == 'Neutral',2,client_text_emotion.sentiment)
+    client_text_emotion.sentiment = np.where(client_text_emotion.sentiment == 'Positive',3,client_text_emotion.sentiment)
+    text_emotion_client = list(client_text_emotion.sentiment)
+
+    agent_text_emotion.sentiment = np.where(agent_text_emotion.sentiment == 'Negative',1,agent_text_emotion.sentiment)
+    agent_text_emotion.sentiment = np.where(agent_text_emotion.sentiment == 'Neutral',2,agent_text_emotion.sentiment)
+    agent_text_emotion.sentiment = np.where(agent_text_emotion.sentiment == 'Positive',3,agent_text_emotion.sentiment)
+    text_emotion_agent = list(agent_text_emotion.sentiment)
 
     if customer_satisfaction_rate > 75:
         satisfaction = 1
@@ -251,7 +281,10 @@ def get_ind_data(call_id):
                 'agent_ironypercent':agent_ironypercent,
                 'client_hatepercent':client_hatepercent,
                 'agent_hatepercent':agent_hatepercent,
-                'silence':silence}
+                'silence':silence,
+                'text_emotion_client':text_emotion_client,
+                'text_emotion_agent':text_emotion_agent,
+                'agent':agent}
     
     return dict_met
 
@@ -396,6 +429,7 @@ def individual_call(ind_metrics_dict):
     with col3:
         st.markdown("##### Call Duration -  {} seconds".format(ind_metrics_dict['duration']))
         st.markdown("##### Call Datetime - {}".format(ind_metrics_dict['datetime']))
+        st.markdown("##### Agent Name - {}".format(ind_metrics_dict['agent']))
 
     st.divider()
 
@@ -416,17 +450,10 @@ def individual_call(ind_metrics_dict):
     st.divider()
     st.markdown("### MoodMap")
 
-    # sql_query = """SELECT * FROM public.call_mood_agent
-    #         ORDER BY callid ASC, starttime ASC, endtime ASC LIMIT 100"""
-    # df_em = pd.read_sql_query(sql_query, read_data())
-    # df_em.emotion = np.where(df_em.emotion == 'angry',1,df_em.emotion)
-    # df_em.emotion = np.where(df_em.emotion == 'sad',2,df_em.emotion)
-    # df_em.emotion = np.where(df_em.emotion == 'neutral',3,df_em.emotion)
-    # df_em.emotion = np.where(df_em.emotion == 'happy',4,df_em.emotion)
+   
 
     tab1, tab2 = st.tabs(["Customer", "Agent"])
     with tab1:
-        print('****************',ind_metrics_dict['emotion_client'])
         chart.generate_emotion_plot(ind_metrics_dict['emotion_client'])
     with tab2:
         chart.generate_emotion_plot(ind_metrics_dict['emotion_agent'])
@@ -436,9 +463,9 @@ def individual_call(ind_metrics_dict):
     st.markdown("### Text Emotion")
     tab1, tab2 = st.tabs(["Customer", "Agent"])
     with tab1:
-        chart.generate_text_emotion_plot([1,2,1,2,3,3,3])
+        chart.generate_text_emotion_plot(ind_metrics_dict['text_emotion_client'])
     with tab2:
-        chart.generate_text_emotion_plot([3,2,1,2,3,3,3,3,2,1,1,3])
+        chart.generate_text_emotion_plot(ind_metrics_dict['text_emotion_agent'])
 
     st.divider()
 
