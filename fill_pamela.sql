@@ -103,19 +103,19 @@ INSERT INTO Call_Mood_Client (CallId, StartTime, EndTime, Emotion) VALUES
 INSERT INTO Call_Sentence_Agent (CallId, SpeechText, Sentiment, Irony, StartTime, EndTime, HateLevelPercent, MeanEmotion) VALUES
     (1, 'Thank you for calling. How can I help you today?', 'Positive', 'None', '2023-01-01 08:00:03', '2023-01-01 08:05:00', 0, 'Happy'),
     (1, 'How may I assist you today?', 'Neutral', 'None', '2023-01-02 09:00:00', '2023-01-02 09:05:20', 0, 'Neutral'),
-    (1, 'Thank you for calling. How can I help you today?', 'Positive', 'None', '2023-01-01 08:00:04', '2023-01-01 08:05:00', 0, 'Happy'),
+    (1, 'Thank you for calling. How can I help you today?', 'Positive', 'None', '2023-01-01 08:00:04', '2023-01-01 08:05:00', 0, 'Sad'),
     (1, 'How may I assist you today?', 'Negative', 'None', '2023-01-02 09:00:00', '2023-01-02 09:05:50', 0, 'Neutral'),
     (1, 'Thank you for calling. How can I help you today?', 'Positive', 'None', '2023-01-01 08:00:06', '2023-01-01 08:05:00', 0, 'Happy'),
     (2, 'How may I assist you today?', 'Positive', 'None', '2023-01-02 09:00:00', '2023-01-02 09:05:07', 0, 'Neutral'),
     (2, 'I understand your frustration. Let me try to resolve this issue for you.', 'Negative', 'None', '2023-01-03 10:00:08', '2023-01-03 10:05:00', 10, 'Angry'),
     (2, 'Thank you for calling. How can I help you today?', 'Negative', 'None', '2023-01-01 08:00:00', '2023-01-01 08:05:09', 0, 'Happy'),
     (2, 'How may I assist you today?', 'Neutral', 'None', '2023-01-02 09:00:00', '2023-01-02 09:05:13', 0, 'Neutral'),
-    (2, 'Thank you for calling. How can I help you today?', 'Positive', 'None', '2023-01-01 08:00:00', '2023-01-01 08:05:14', 0, 'Happy'),
+    (2, 'Thank you for calling. How can I help you today?', 'Positive', 'None', '2023-01-01 08:00:00', '2023-01-01 08:05:14', 0, 'Sad'),
     (2, 'How may I assist you today?', 'Negative', 'None', '2023-01-02 09:00:00', '2023-01-02 09:05:30', 0, 'Neutral');
 
 -- Populating the Call_Sentence_Client table
 INSERT INTO Call_Sentence_Client (CallId, SpeechText, Sentiment, Irony, StartTime, EndTime, HateLevelPercent, MeanEmotion) VALUES
-    (1, 'Thank you for calling. How can I help you today?', 'Neutral', 'None', '2023-01-01 08:00:03', '2023-01-01 08:05:00', 0, 'Happy'),
+    (1, 'Thank you for calling. How can I help you today?', 'Neutral', 'None', '2023-01-01 08:00:03', '2023-01-01 08:05:00', 0, 'Sad'),
     (1, 'How may I assist you today?', 'Neutral', 'None', '2023-01-02 09:00:00', '2023-01-02 09:05:20', 0, 'Neutral'),
     (1, 'Thank you for calling. How can I help you today?', 'Positive', 'None', '2023-01-01 08:00:04', '2023-01-01 08:05:00', 0, 'Happy'),
     (1, 'How may I assist you today?', 'Negative', 'None', '2023-01-02 09:00:00', '2023-01-02 09:05:50', 0, 'Neutral'),

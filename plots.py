@@ -309,3 +309,62 @@ class CustomPieChart:
         
         st.plotly_chart(self.fig)
 
+
+
+
+
+    def plot_top_performances(self,df):
+        # Grouping data by call topic and calculating average performance rates
+        avg_performance = df.groupby('call_topic').agg({'agent_performance_rate': 'mean', 'customer_performance_rate': 'mean', 'call_score': 'mean'})
+        avg_performance = avg_performance.reset_index().sort_values(by='agent_performance_rate', ascending=False)
+
+        # Selecting top 10 call topics
+        top_10_topics = avg_performance.head(10)
+
+        # Plotting using Plotly
+        self.fig = go.Figure()
+
+        # Adding trace for agent performance rate
+        self.fig.add_trace(go.Bar(
+            y=top_10_topics['call_topic'],
+            x=top_10_topics['agent_performance_rate'],
+            name='Agent Performance Rate',
+            orientation='h',
+            marker_color='blue'
+        ))
+
+        # Adding trace for customer performance rate
+        self.fig.add_trace(go.Bar(
+            y=top_10_topics['call_topic'],
+            x=top_10_topics['customer_performance_rate'],
+            name='Customer Satisfaction Level',
+            orientation='h',
+            marker_color='orange'
+        ))
+
+        # Adding trace for call score
+        self.fig.add_trace(go.Bar(
+            y=top_10_topics['call_topic'],
+            x=top_10_topics['call_score'],
+            name='Customer Care',
+            orientation='h',
+            marker_color='green'
+        ))
+
+        # Updating layout
+        self.fig.update_layout(
+            title='Call Topics and Performance Rates',
+            yaxis_title='Call Topic',
+            xaxis_title='Average Rate',
+            barmode='group',
+            plot_bgcolor='rgb(16,18,22)',
+            paper_bgcolor='rgb(16,18,22)',
+            xaxis=dict(showgrid=False), 
+            yaxis=dict(showgrid=False),
+            font=dict(color='white'),
+            height=400,  
+            width=1000 
+        )
+
+        
+        st.plotly_chart(self.fig)
