@@ -1,14 +1,16 @@
 import streamlit as st
 from plots import CustomPieChart
+from sqlalchemy import create_engine
 import pandas as pd
 import numpy as np
 import json
 import time
 import threading
 import psycopg2
-from sqlalchemy import create_engine
 import re
 import difflib
+
+
 
 def add_spaces(lst):
     modified_list = []
@@ -367,7 +369,6 @@ def dashboard(metrics_dict):
         st.caption("Average voice emotion")
         tab1, tab2 = st.tabs(["Customers", "Agents"])
         with tab1:
-            print(metrics_dict['voice_counts_client'])
             chart.create_bar_chart(metrics_dict['voice_counts_client'],metrics_dict['voice_emotions_clinet'])
         with tab2:
             chart.create_bar_chart(metrics_dict['voice_counts_agent'],metrics_dict['voice_emotions_agent'])
@@ -528,6 +529,29 @@ def individual_call(ind_metrics_dict):
             chart.create_silence_pie_chart(silence=ind_metrics_dict['silence'],not_silence=(100-ind_metrics_dict['silence']))
     ################################################
     
+def dialogue(callid):
+
+    query_agent = """ SELECT * FROM public.call_sentence_agent"""
+    df_agent = pd.read_sql_query(query_agent, read_data())
+    query_client = """ SELECT * FROM public.call_sentence_client"""
+    df_client = pd.read_sql_query(query_client, read_data())
+
+    a = df_agent[df_client.callid == callid]
+    a['speaker'] = 'Agent'
+    b = df_client[df_client.callid == callid]
+    b['speaker'] = 'Customer'
+    ab = pd.concat([a,b])
+    dialogue_df = ab.sort_values(by='endtime')
+
+    conversation = dialogue_df.to_dict('records')
+
+
+    for index, line in enumerate(conversation):
+        if line['speaker'] == 'Customer':
+            st.text_input("Customer:", value=line['speechtext'], key=f"customer_{index}", disabled=True)
+        elif line['speaker'] == 'Agent':
+            st.text_input("Agent:", value=line['speechtext'], key=f"agent{index}", disabled=True)
+
 
         
 def login():
@@ -613,12 +637,18 @@ def main():
 
         if page == "Individual Call":
             st.sidebar.divider()
+
+
             call_id = st.sidebar.text_input('Call ID')
             search_button_clicked = st.sidebar.button("Search", type="primary")
 
+            page_2 = st.sidebar.selectbox("Select Page", ["Analytics", "Dialogue"])
+
             
 
-            if search_button_clicked:
+            
+
+            if search_button_clicked and page_2 == "Analytics":
                 # ind_metrics_dict = get_ind_data(call_id)
                 # individual_call(ind_metrics_dict)
                 try:
@@ -626,6 +656,10 @@ def main():
                     individual_call(ind_metrics_dict)
                 except:
                     st.markdown("### There is no available data !!!")
+            elif search_button_clicked and page_2 == "Dialogue":
+                dialogue(int(call_id))
+        
+
         
 
 if __name__ == "__main__":

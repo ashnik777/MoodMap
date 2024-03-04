@@ -45,6 +45,7 @@ CREATE TABLE CallInfo (
     customer_satisfaction_rate SMALLINT,
     agent_performance_rate SMALLINT,
     alert boolean,
+    togetherSpokenTime int,
     FOREIGN KEY (CallId) REFERENCES Call(Id)
 );
 --satisfactiony poxel
@@ -55,10 +56,9 @@ CREATE TABLE CallInfo (
 -- Creating the Call_Mood_Agent table
 CREATE TABLE Call_Mood_Agent (
     CallId INT,
-    StartTime TIMESTAMP,
-    EndTime TIMESTAMP,
+    Calculated TIMESTAMP,
     Emotion VARCHAR(10),
-    PRIMARY KEY (CallId, StartTime, EndTime),
+    PRIMARY KEY (CallId, Calculated),
     FOREIGN KEY (CallId) REFERENCES Call(Id)
 );
 --emotion_in_number INT, change 
@@ -66,10 +66,9 @@ CREATE TABLE Call_Mood_Agent (
 -- Creating the Call_Mood_Client table
 CREATE TABLE Call_Mood_Client (
     CallId INT,
-    StartTime TIMESTAMP,
-    EndTime TIMESTAMP,
+    Calculated TIMESTAMP,
     Emotion VARCHAR(10),
-    PRIMARY KEY (CallId, StartTime, EndTime),
+    PRIMARY KEY (CallId, Calculated),
     FOREIGN KEY (CallId) REFERENCES Call(Id)
 );
 --emotion_in_number INT, change
