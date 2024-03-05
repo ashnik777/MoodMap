@@ -24,14 +24,14 @@ INSERT INTO Call (StartTime, EndTime, AgentId, CallScore, Duration) VALUES
 
 -- Populating the CallInfo table
 INSERT INTO CallInfo (CallId, Topic, ClientInterrupts, AgentInterrupts, SilencePercent, ClientSpeechDuration, AgentSpeechDuration, client_hatespeechpercent, agent_hatespeechpercent, client_ironypercent, agent_ironypercent, customer_satisfaction_rate, agent_performance_rate, alert,togetherSpokenTime) VALUES
-    (1, 'Sales',       1, 1, 10, 150,  140, 10, 30, 12, 11, 20, 65, False,12),
-    (2, 'Support',     1, 0, 5, 120,   75,  30, 20, 11, 10, 10, 45, False,23),
-    (3, 'Card',        0, 0, 15, 100,  125, 70, 40, 32, 22, 30, 50, True,34),
-    (4, 'Sales',       1, 1, 20, 150,  140, 13, 32, 22, 1, 45, 90, False,54),
-    (5, 'Support',     1, 0, 25, 120,  75,  24, 12, 13, 0, 55, 11, True,12),
-    (6, 'transaction', 0, 0, 35, 100, 125,  65, 42, 34, 23, 76, 34, True,43),
+    (1, 'Sales',       1, 2, 10, 150,  140, 10, 30, 12, 11, 20, 65, False,12),
+    (2, 'Support',     0, 4, 5, 120,   75,  30, 20, 11, 10, 10, 45, False,23),
+    (3, 'Card',        4, 1, 15, 100,  125, 70, 40, 32, 22, 30, 50, True,34),
+    (4, 'Sales',       6, 6, 20, 150,  140, 13, 32, 22, 1, 45, 90, False,54),
+    (5, 'Support',     5, 3, 25, 120,  75,  24, 12, 13, 0, 55, 11, True,12),
+    (6, 'transaction', 0, 4, 35, 100, 125,  65, 42, 34, 23, 76, 34, True,43),
     (7, 'Sales',        1, 1, 10, 150, 140, 23, 13, 21, 11, 34, 22, False,43),
-    (8, 'bank account', 1, 0, 22, 120, 75,  12, 22, 12, 21, 98, 76, True,65),
+    (8, 'bank account', 1, 5, 22, 120, 75,  12, 22, 12, 21, 98, 76, True,65),
     (9, 'card',         0, 0, 43, 100, 125, 7,  4,   3, 2,  90,  81, False,65);
 -- Populating the Call_Mood_Agent table
 INSERT INTO Call_Mood_Agent (CallId, Calculated, Emotion) VALUES

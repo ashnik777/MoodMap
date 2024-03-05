@@ -253,6 +253,11 @@ def get_ind_data(call_id):
     agent_performance_rate = df.agent_performance_rate[0]
     callscore = df.callscore[0]
 
+    agentinterrupts = df.agentinterrupts[0]
+    clientinterrupts = df.clientinterrupts[0]
+    togetherspeak = df.togetherspokentime[0]
+
+
     ## Voice Emotions
     client_voice_emotion.emotion = np.where(client_voice_emotion.emotion == 'Angry',1,client_voice_emotion.emotion)
     client_voice_emotion.emotion = np.where(client_voice_emotion.emotion == 'Sad',2,client_voice_emotion.emotion)
@@ -307,7 +312,10 @@ def get_ind_data(call_id):
                 'silence':silence,
                 'text_emotion_client':text_emotion_client,
                 'text_emotion_agent':text_emotion_agent,
-                'agent':agent}
+                'agent':agent,
+                'agentinterrupts':agentinterrupts,
+                'clientinterrupts':clientinterrupts,
+                'togetherspeak':togetherspeak}
     
     return dict_met
 
@@ -528,13 +536,37 @@ def individual_call(ind_metrics_dict):
             st.caption("Silence percent")
             chart.create_silence_pie_chart(silence=ind_metrics_dict['silence'],not_silence=(100-ind_metrics_dict['silence']))
     ################################################
+            
+    st.divider()
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+         st.markdown("##### Agent Interrupt Count - {}".format(ind_metrics_dict['agentinterrupts']))
+         st.markdown("##### Client Interrupt Count - {}".format(ind_metrics_dict['clientinterrupts']))
+    
+    with col3:
+         st.markdown("##### Together Speak Time - {} seconds".format(ind_metrics_dict['togetherspeak']))
+
     
 def dialogue(callid):
+
+    col1, col2, col3 = st.columns(3)
+    with col2:
+        st.title("Call Dialogue ")
+    
+
+
 
     query_agent = """ SELECT * FROM public.call_sentence_agent"""
     df_agent = pd.read_sql_query(query_agent, read_data())
     query_client = """ SELECT * FROM public.call_sentence_client"""
     df_client = pd.read_sql_query(query_client, read_data())
+
+    query_agent_aspect = """ SELECT * FROM public.call_sentence_aspect_agent"""
+    df_agent_aspect = pd.read_sql_query(query_agent_aspect, read_data())
+    query_client_aspect = """ SELECT * FROM public.call_sentence_aspect_client"""
+    df_client_aspect = pd.read_sql_query(query_client_aspect, read_data())
 
     a = df_agent[df_client.callid == callid]
     a['speaker'] = 'Agent'
@@ -542,15 +574,22 @@ def dialogue(callid):
     b['speaker'] = 'Customer'
     ab = pd.concat([a,b])
     dialogue_df = ab.sort_values(by='endtime')
+    
 
     conversation = dialogue_df.to_dict('records')
-
-
+    
+    print(conversation)
+    print(df_client_aspect)
     for index, line in enumerate(conversation):
         if line['speaker'] == 'Customer':
             st.text_input("Customer:", value=line['speechtext'], key=f"customer_{index}", disabled=True)
+            #st.markdown(df_client_aspect[df_client_aspect.callsentenceid == line['id']][['aspect','opinion']].to_dict('records'))
+            st.write(df_client_aspect[df_client_aspect.callsentenceid == line['id']][['aspect','opinion']])
         elif line['speaker'] == 'Agent':
             st.text_input("Agent:", value=line['speechtext'], key=f"agent{index}", disabled=True)
+            #st.markdown(df_agent_aspect[df_agent_aspect.callsentenceid == line['id']][['aspect','opinion']].to_dict('records'))
+            st.write(df_agent_aspect[df_agent_aspect.callsentenceid == line['id']][['aspect','opinion']])
+
 
 
         
@@ -642,13 +681,13 @@ def main():
             call_id = st.sidebar.text_input('Call ID')
             search_button_clicked = st.sidebar.button("Search", type="primary")
 
-            page_2 = st.sidebar.selectbox("Select Page", ["Analytics", "Dialogue"])
+            page_2 = st.sidebar.selectbox("Select Page", ["Report", "Dialogue"])
 
             
 
             
 
-            if search_button_clicked and page_2 == "Analytics":
+            if search_button_clicked and page_2 == "Report":
                 # ind_metrics_dict = get_ind_data(call_id)
                 # individual_call(ind_metrics_dict)
                 try:
